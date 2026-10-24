@@ -1,0 +1,170 @@
+import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Terminal as TerminalIcon, X, Minus, Square } from 'lucide-react';
+
+const commands = {
+    help: "Available commands: bio, skills, socials, email, contact, quote, clear, whoami",
+    bio: "I am a Full Stack Engineer passionate about AI and scalable architectures.",
+    skills: "JavaScript, React, Python, Node.js, AI/ML, Three.js, Docker, AWS",
+    socials: "GitHub: nfsprogramming | LinkedIn: (Simulated)",
+    email: "nifrasempire25@gmail.com",
+    contact: "You can reach me at nifrasempire25@gmail.com or via the Contact page.",
+    whoami: "visitor@nfs-portfolio:~ (You are a curious explorer)",
+    quote: "\"The best way to predict the future is to invent it.\" - Alan Kay",
+    sudo: "Permission denied: You are not authorized."
+};
+
+const Typewriter = ({ text, speed = 15 }) => {
+    const [displayedText, setDisplayedText] = useState('');
+
+    useEffect(() => {
+        let i = 0;
+        const timer = setInterval(() => {
+            if (i < text.length) {
+                setDisplayedText(() => text.substring(0, i + 1));
+                i++;
+            } else {
+                clearInterval(timer);
+            }
+        }, speed);
+        return () => clearInterval(timer);
+    }, [text, speed]);
+
+    return <span>{displayedText}</span>;
+};
+
+export default function Terminal() {
+    const [history, setHistory] = useState([
+        { type: 'info', content: 'Welcome to NFS Terminal v1.0.0' },
+        { type: 'info', content: 'Type "help" to see available commands.' }
+    ]);
+    const [input, setInput] = useState('');
+    const bottomRef = useRef(null);
+
+    const handleCommand = (e) => {
+        if (e.key === 'Enter') {
+            let cmd = input.trim().toLowerCase();
+
+            // Aliases
+            if (cmd === 'who i am' || cmd === 'who am i') cmd = 'whoami';
+            if (cmd === 'hi' || cmd === 'hello') cmd = 'help';
+
+            const newHistory = [...history, { type: 'input', content: input }];
+
+            if (cmd === 'clear') {
+                setHistory([]);
+            } else if (cmd === 'sudo nfs-engine' || cmd === 'devmode') {
+                window.dispatchEvent(new CustomEvent('toggle-dev-mode'));
+                newHistory.push({ type: 'info', content: 'INITIALIZING PORTFOLIO ENGINE v2.0... Bypassing security protocols...' });
+                setHistory(newHistory);
+            } else if (commands[cmd]) {
+                newHistory.push({ type: 'output', content: commands[cmd] });
+                setHistory(newHistory);
+            } else if (cmd !== '') {
+                newHistory.push({ type: 'error', content: `Command not found: ${cmd}. Type "help" for valid commands.` });
+                setHistory(newHistory);
+            }
+
+            setInput('');
+        }
+    };
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [history]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="md-terminal auto-layout"
+            style={{
+                background: '#0a0a0a',
+                borderRadius: '12px',
+                border: '1px solid #333',
+                overflow: 'hidden',
+                fontFamily: '"Fira Code", monospace',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+            }}
+        >
+            {/* Terminal Header */}
+            <div style={{
+                background: '#1a1a1a',
+                padding: '0.8rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                borderBottom: '1px solid #333'
+            }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', color: '#888', fontSize: '0.8rem', fontWeight: 600 }}>
+                    visitor@nfs-portfolio:~
+                </div>
+            </div>
+
+            {/* Terminal Body */}
+            <div
+                className="terminal-body"
+                style={{
+                    padding: 'var(--space-md)',
+                    flex: 1,
+                    overflowY: 'auto',
+                    color: '#e0e0e0',
+                    fontSize: 'clamp(0.8rem, 2vw, 0.95rem)'
+                }}
+            >
+                {history.map((line, i) => (
+                    <div key={i} style={{ marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                        {line.type === 'input' && (
+                            <span style={{ color: '#27c93f', marginRight: '0.5rem' }}>➜ ~</span>
+                        )}
+                        <span style={{
+                            color: line.type === 'error' ? '#ff5f56' :
+                                line.type === 'info' ? '#888' :
+                                    'inherit'
+                        }}>
+                            {/* Only type out system outputs, not user input */}
+                            {line.type === 'input' ? (
+                                line.content
+                            ) : (
+                                <Typewriter text={line.content} />
+                            )}
+                        </span>
+                    </div>
+                ))}
+
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ color: '#27c93f', marginRight: '0.5rem' }}>➜ ~</span>
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleCommand}
+                        autoFocus
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            fontFamily: 'inherit',
+                            fontSize: 'inherit',
+                            outline: 'none',
+                            flex: 1,
+                            width: '100%',
+                            minWidth: '0'
+                        }}
+                    />
+                </div>
+                <div ref={bottomRef} />
+            </div>
+        </motion.div>
+    );
+}

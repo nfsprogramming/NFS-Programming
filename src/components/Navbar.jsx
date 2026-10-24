@@ -1,0 +1,62 @@
+import { useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import { Menu, X, Github, Linkedin } from 'lucide-react';
+import Magnetic from './ui/Magnetic';
+
+export default function Navbar() {
+    const [isNavOpen, setIsNavOpen] = useState(false);
+
+    const navItems = ['About', 'Services', 'Experience', 'Skills', 'Projects', 'Contact'];
+
+    return (
+        <nav className="navbar">
+            <Link to="/" className="brand-logo" onClick={() => setIsNavOpen(false)}>
+                <img src="/logo.png" alt="NFS Programming Logo" className="nav-logo" />
+                NFS <span>Programming</span>
+            </Link>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <button className="mobile-menu-btn" onClick={() => setIsNavOpen(!isNavOpen)} aria-label="Toggle Menu">
+                    {isNavOpen ? <X size={28} style={{ color: 'var(--text-color)' }} /> : <Menu size={28} style={{ color: 'var(--text-color)' }} />}
+                </button>
+            </div>
+
+            <ul className={`nav-links ${isNavOpen ? 'mobile-open' : 'hidden-mobile'}`}>
+                {navItems.map((item) => (
+                    <li key={item}>
+                        <Magnetic>
+                            <NavLink
+                                to={`/${item.toLowerCase()}`}
+                                onClick={() => setIsNavOpen(false)}
+                                style={({ isActive }) => ({
+                                    opacity: isActive ? 1 : 0.7,
+                                    color: isActive ? 'var(--accent-color)' : 'inherit',
+                                    display: 'block', // Ensure full hit area
+                                    padding: '0.5rem' // Add some padding for magnetic feel
+                                })}
+                            >
+                                {item}
+                            </NavLink>
+                        </Magnetic>
+                    </li>
+                ))}
+
+                {/* Social Links */}
+                <li className="hidden-mobile" style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.2)', margin: '0 0.5rem' }}></li>
+
+                <li className="auto-layout-row">
+                    <Magnetic>
+                        <a href="https://github.com/nfsprogramming" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', transition: 'transform 0.2s', color: 'inherit', padding: '0.5rem' }} className="social-icon">
+                            <Github size={20} />
+                        </a>
+                    </Magnetic>
+                    <Magnetic>
+                        <a href="https://www.linkedin.com/in/nfs-photography" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', transition: 'transform 0.2s', color: 'inherit', padding: '0.5rem' }} className="social-icon">
+                            <Linkedin size={20} />
+                        </a>
+                    </Magnetic>
+                </li>
+            </ul>
+        </nav>
+    );
+}
